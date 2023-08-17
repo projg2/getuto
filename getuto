@@ -6,14 +6,15 @@
 
 # If the directory does not exist yet, it will be set up such that
 # the Gentoo Release Engineering keys are trusted for signing binary
-# packages. The keys are taken from sec-keys/openpgp-keys-gentoo-release.
-
+# packages.
+# The keys are taken from sec-keys/openpgp-keys-gentoo-release.
 # If the directory already exists, then all keys in it will be refreshed
 # from keyservers.
-
 # In addition sanity checks and corrections are performed ...
 
-
+# Runtime requirements:
+# app-crypt/gnupg
+# sec-keys/openpgp-keys-gentoo-release
 
 [[ $(whoami) == 'root' ]] || exit 100
 
