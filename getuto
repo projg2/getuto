@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# This bash script maintains /etc/portage/gnupg in a Gentoo installation.
+# It should be run as root always before downloading and installing binary
+# packages.
+
+# If the directory does not exist yet, it will be set up such that
+# the Gentoo Release Engineering keys are trusted for signing binary
+# packages. The keys are taken from sec-keys/openpgp-keys-gentoo-release.
+
+# If the directory already exists, then all keys in it will be refreshed
+# from keyservers.
+
+# In addition sanity checks and corrections are performed ...
+
+
+
+[[ $(whoami) == 'root' ]] || exit 100
+
+mygpg=/etc/portage/gnupg
+
+
+if [[ ! -d /etc/portage/gnupg ]] ; then
+
+	# The directory does not exist yet.
+	mkdir -p ${mygpg}
+	chown root:root ${mygpg}
+	chmod u=rwx,go=rx ${mygpg}
+
+	# Generate a local ultimate trust anchor key.
+	# gpg --homedir ${mygpg} ....
+
+	# Import all release engineering keys.
+
+	# Locally sign all release engineering keys.
+
+	# Make sure the trustdb is world-readable.
+
+fi
+
+# Refresh all keys from the keyserver.
+
+# Make sure the trustdb is world-readable (again).
