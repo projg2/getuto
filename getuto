@@ -21,6 +21,9 @@ mykeyserver="hkps://keys.openpgp.org"
 
 export GNUPGHOME=/etc/portage/gnupg
 
+gpgconf --kill gpg-agent
+
+
 if [[ ! -d ${GNUPGHOME} ]] ; then
 
 	# The directory does not exist yet.
@@ -47,40 +50,36 @@ Passphrase: ${PASS}
 %echo done
 EOF
 
-	gpg --batch --generate-key "${KEY_CONFIG_FILE}"
+	gpg --no-permission-warning --batch --generate-key "${KEY_CONFIG_FILE}"
 	rm -f "${KEY_CONFIG_FILE}"
 
 	touch "${GNUPGHOME}/pass"
 	chmod 600 "${GNUPGHOME}/pass"
 	echo "${PASS}" > "${GNUPGHOME}/pass"
 
-	gpg --batch --list-secret-keys --with-colons | grep '^sec' | sed -e 's/^sec:.:[0-9]*:[0-9]*://g' -e 's/:.*$//g' > "${GNUPGHOME}/mykeyid"
+	gpg --no-permission-warning --batch --list-secret-keys --with-colons | grep '^sec' | sed -e 's/^sec:.:[0-9]*:[0-9]*://g' -e 's/:.*$//g' > "${GNUPGHOME}/mykeyid"
 	mykeyid=$(cat "${GNUPGHOME}/mykeyid")
-
-	# Mark my own key as ultimately trusted.
-
-	echo -e "5\ny\n" | gpg --command-fd 0 --edit-key "${mykeyid}" trust
 
 	# Import all release engineering keys.
 
-	gpg --batch --import /usr/share/openpgp-keys/gentoo-release.asc
+	gpg --no-permission-warning --batch --import /usr/share/openpgp-keys/gentoo-release.asc
 
 	# List all release engineering keys.
 
-	myrelkeys = $(gpg --batch --list-keys --with-colons | grep ^pub | sed -e 's/^pub:.:[0-9]*:[0-9]*://g' -e 's/:.*$//g | grep -v ${mykeyid})
+	myrelkeys=$(gpg --no-permission-warning --batch --list-keys --with-colons | grep ^pub | sed -e 's/^pub:.:[0-9]*:[0-9]*://g' -e 's/:.*$//g' | grep -v ${mykeyid})
 
 	# Locally sign all release engineering keys.
 
 	for relkeyid in ${myrelkeys} ; do
 
-		gpg --batch --keyserver "${mykeyserver}" --recv-keys "${relkeyid}"
-		gpg --batch --yes --pinentry-mode loopback --passphrase "${PASS}" --lsign-key "${relkeyid}"
+		gpg --no-permission-warning --batch --keyserver "${mykeyserver}" --recv-keys "${relkeyid}"
+		gpg --no-permission-warning --batch --yes --pinentry-mode loopback --passphrase "${PASS}" --lsign-key "${relkeyid}"
 
 	done
 
 	# Update the trustdb
 
-	gpg --batch --check-trustdb
+	gpg --no-permission-warning --batch --check-trustdb
 
 	# Make sure the trustdb is world-readable.
 
@@ -90,7 +89,7 @@ fi
 
 # Refresh all keys from the keyserver.
 
-gpg --batch --keyserver "${mykeyserver}" --recv-keys
+gpg --no-permission-warning --batch --keyserver "${mykeyserver}" --refresh-keys
 
 # Make sure the trustdb is world-readable (again).
 
