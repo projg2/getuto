@@ -15,6 +15,7 @@
 # Runtime requirements:
 # app-crypt/gnupg
 # sec-keys/openpgp-keys-gentoo-release
+set -e
 
 [[ $(whoami) == 'root' ]] || { echo "${0} must be run as root!" ; exit 100 ; }
 
