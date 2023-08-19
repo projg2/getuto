@@ -24,7 +24,6 @@ export GNUPGHOME="${ROOT%/}"/etc/portage/gnupg
 
 gpgconf --kill gpg-agent
 
-
 if [[ ! -d ${GNUPGHOME} ]] ; then
 
 	# The directory does not exist yet.
@@ -62,6 +61,11 @@ EOF
 	mykeyid=$(<"${GNUPGHOME}/mykeyid")
 
 	# Import all release engineering keys.
+
+	if [[ ! -f "${ROOT%/}"/usr/share/openpgp-keys/gentoo-release.asc ]] ; then
+		echo "\"${ROOT%/}\"/usr/share/openpgp-keys/gentoo-release.asc not found. Is sec-keys/openpgp-keys-gentoo-release installed?"
+		exit 1
+	fi
 
 	gpg --no-permission-warning --batch --import "${ROOT%/}"/usr/share/openpgp-keys/gentoo-release.asc
 
