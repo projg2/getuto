@@ -27,8 +27,8 @@ gpgconf --kill gpg-agent
 if [[ ! -d ${GNUPGHOME} ]] ; then
 
 	# The directory does not exist yet.
-	mkdir -p ${GNUPGHOME}
-	chmod u=rwx,go=rx ${GNUPGHOME}
+	mkdir -p "${GNUPGHOME}"
+	chmod u=rwx,go=rx "${GNUPGHOME}"
 
 	# Generate a local ultimate trust anchor key.
 
@@ -71,7 +71,7 @@ EOF
 
 	# List all release engineering keys.
 
-	myrelkeys=$(gpg --no-permission-warning --batch --list-keys --with-colons | grep ^pub | sed -e 's/^pub:.:[0-9]*:[0-9]*://g' -e 's/:.*$//g' | grep -v ${mykeyid})
+	myrelkeys=$(gpg --no-permission-warning --batch --list-keys --with-colons | grep ^pub | sed -e 's/^pub:.:[0-9]*:[0-9]*://g' -e 's/:.*$//g' | grep -v "${mykeyid}")
 
 	# Locally sign all release engineering keys.
 
