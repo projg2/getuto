@@ -20,7 +20,7 @@
 
 mykeyserver="hkps://keys.openpgp.org"
 
-export GNUPGHOME=/etc/portage/gnupg
+export GNUPGHOME="${ROOT%/}"/etc/portage/gnupg
 
 gpgconf --kill gpg-agent
 
@@ -63,7 +63,7 @@ EOF
 
 	# Import all release engineering keys.
 
-	gpg --no-permission-warning --batch --import /usr/share/openpgp-keys/gentoo-release.asc
+	gpg --no-permission-warning --batch --import "${ROOT%/}"/usr/share/openpgp-keys/gentoo-release.asc
 
 	# List all release engineering keys.
 
