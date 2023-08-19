@@ -84,7 +84,7 @@ EOF
 		if ! gpg --no-permission-warning --batch --yes --no-tty --passphrase-file="${GNUPGHOME}/pass" --pinentry-mode loopback --quick-lsign-key "${relkeyid}" ; then
 			# But that won't work for subkeys, so fall back to a hackier method.
 			set -o pipefail
-			echo -e "y\ny\n" | gpg --command-fd 0 --no-permission-warning  --yes --passphrase-file="${GNUPGHOME}/pass" --pinentry-mode loopback --lsign-key "${relkeyid}"
+			echo -e "y\ny\n" | gpg --command-fd 0 --no-permission-warning --yes --no-tty --passphrase-file="${GNUPGHOME}/pass" --pinentry-mode loopback --lsign-key "${relkeyid}"
 			set -u pipefail
 		fi
 	done
