@@ -78,9 +78,14 @@ EOF
 
 	for relkeyid in ${myrelkeys} ; do
 
-		gpg --no-permission-warning --batch --keyserver "${mykeyserver}" --recv-keys "${relkeyid}"
-		gpg --no-permission-warning --batch --yes --pinentry-mode loopback --passphrase "${PASS}" --lsign-key "${relkeyid}"
-
+		gpg --no-permission-warning --batch --keyserver "${mykeyserver}" --recv-keys "${relkeyid}" || true # TODO: keys.openpgp.org lacks a UID for our keys, need to verify email
+		# We have to use --quick-lsign-key for this to work with batch: https://dev.gnupg.org/T1606
+		if ! gpg --no-permission-warning --batch --yes --no-tty --passphrase-file="${GNUPGHOME}/pass" --pinentry-mode loopback --quick-lsign-key "${relkeyid}" ; then
+			# But that won't work for subkeys, so fall back to a hackier method.
+			set -o pipefail
+			echo -e "y\ny\n" | gpg --command-fd 0 --no-permission-warning  --yes --passphrase-file="${GNUPGHOME}/pass" --pinentry-mode loopback --lsign-key "${relkeyid}"
+			set -u pipefail
+		fi
 	done
 
 	# Update the trustdb
