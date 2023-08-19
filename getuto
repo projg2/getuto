@@ -16,7 +16,7 @@
 # app-crypt/gnupg
 # sec-keys/openpgp-keys-gentoo-release
 
-[[ $(whoami) == 'root' ]] || exit 100
+[[ $(whoami) == 'root' ]] || { echo "${0} must be run as root!" ; exit 100 ; }
 
 mykeyserver="hkps://keys.openpgp.org"
 
