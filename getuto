@@ -57,7 +57,7 @@ EOF
 	chmod 600 "${GNUPGHOME}/pass"
 	echo "${PASS}" > "${GNUPGHOME}/pass"
 
-	gpg --no-permission-warning --batch --list-secret-keys --with-colons | grep '^sec' | sed -e 's/^sec:.:[0-9]*:[0-9]*://g' -e 's/:.*$//g' > "${GNUPGHOME}/mykeyid"
+	gpg --no-permission-warning --batch --list-secret-keys --keyid-format=long --with-colons | grep "^fpr" | sed -n 's/^fpr:::::::::\([[:alnum:]]\+\):/\1/p' > "${GNUPGHOME}/mykeyid"
 	mykeyid=$(<"${GNUPGHOME}/mykeyid")
 
 	# Import all release engineering keys.
@@ -70,8 +70,9 @@ EOF
 	gpg --no-permission-warning --batch --import "${ROOT%/}"/usr/share/openpgp-keys/gentoo-release.asc
 
 	# List all release engineering keys.
+	# See https://serverfault.com/a/946428.
 
-	myrelkeys=$(gpg --no-permission-warning --batch --list-keys --with-colons | grep ^pub | sed -e 's/^pub:.:[0-9]*:[0-9]*://g' -e 's/:.*$//g' | grep -v "${mykeyid}")
+	myrelkeys=$(gpg --no-permission-warning --batch --list-keys --keyid-format=long --with-colons | grep "^fpr" | sed -n 's/^fpr:::::::::\([[:alnum:]]\+\):/\1/p' | grep -v "${mykeyid}")
 
 	# Locally sign all release engineering keys.
 
