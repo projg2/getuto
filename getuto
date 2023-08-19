@@ -40,8 +40,10 @@ if [[ ! -d ${GNUPGHOME} ]] ; then
 
 	cat > "${KEY_CONFIG_FILE}" <<EOF
 %echo Generating Portage local OpenPGP trust key
-Key-Type: default
-Subkey-Type: default
+Key-Type: RSA
+Key-Length: 3072
+Subkey-Type: RSA
+Subkey-Length: 3072
 Name-Real: Portage Local Trust Key
 Name-Comment: local signing only
 Name-Email: portage@localhost
