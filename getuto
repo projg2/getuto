@@ -59,7 +59,7 @@ EOF
 	echo "${PASS}" > "${GNUPGHOME}/pass"
 
 	gpg --no-permission-warning --batch --list-secret-keys --with-colons | grep '^sec' | sed -e 's/^sec:.:[0-9]*:[0-9]*://g' -e 's/:.*$//g' > "${GNUPGHOME}/mykeyid"
-	mykeyid=$(cat "${GNUPGHOME}/mykeyid")
+	mykeyid=$(<"${GNUPGHOME}/mykeyid")
 
 	# Import all release engineering keys.
 
