@@ -101,7 +101,7 @@ fi
 
 # Refresh all keys from the keyserver.
 
-gpg --no-permission-warning --batch --keyserver "${mykeyserver}" --refresh-keys
+gpg --no-permission-warning --batch --keyserver "${mykeyserver}" --refresh-keys || true # TODO: keys.openpgp.org lacks a UID for our keys, need to verify email
 
 # Make sure the trustdb is world-readable (again).
 
