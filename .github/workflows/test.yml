@@ -1,0 +1,27 @@
+# GitHub actions workflow.
+# https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions
+
+name: Build+Test CI
+
+on: [pull_request, push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container: gentoo/stage3
+    steps:
+    - name: Install dependencies
+      run: |
+        emerge-webrsync
+        emerge --quiet --noreplace --oneshot \
+          app-crypt/gnupg \
+          dev-libs/openssl \
+          sec-keys/openpgp-keys-gentoo-release \
+          sys-devel/make
+
+    - uses: actions/checkout@v3
+      name: Checkout
+
+    - name: Build
+      run: |
+        make check
