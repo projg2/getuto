@@ -16,7 +16,7 @@ mkdir -p "${ROOT}"/usr/share/openpgp-keys
 ln -s "${REAL_ROOT}"/usr/share/openpgp-keys/gentoo-release.asc "${ROOT}"/usr/share/openpgp-keys/gentoo-release.asc
 
 # Generate a keyring using getuto.
-bash -x getuto
+bash -x ./getuto
 
 # Make sure the newly-generated keyring works.
 export GNUPGHOME="${ROOT%/}"/etc/portage/gnupg
@@ -27,4 +27,4 @@ for file in image.tar.bz2 metadata.tar.bz2 ; do
 done
 
 # Try to refresh an existing keyring.
-bash -x getuto
+bash -x ./getuto
