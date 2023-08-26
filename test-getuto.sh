@@ -25,3 +25,6 @@ tar xvf libc-1-r1-1.gpkg.tar -C "${ROOT}"/tmp/binpkg
 for file in image.tar.bz2 metadata.tar.bz2 ; do
 	gpg --verify "${ROOT}"/tmp/binpkg/libc-1-r1-1/${file}.sig
 done
+
+# Try to refresh an existing keyring.
+bash -x getuto
