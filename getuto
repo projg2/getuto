@@ -20,7 +20,10 @@ set -e
 
 [[ $(whoami) == 'root' ]] || { echo "${0} must be run as root!" ; exit 100 ; }
 
-mykeyserver="hkps://keys.openpgp.org"
+mykeyservers=(
+	"hkps://keys.openpgp.org"
+	"hkps://keys.gentoo.org"
+)
 
 export GNUPGHOME="${ROOT%/}"/etc/portage/gnupg
 
@@ -72,11 +75,12 @@ if [[ ! -d ${GNUPGHOME} ]] ; then
 
 	# List all release engineering keys.
 	# See https://serverfault.com/a/946428.
-
 	myrelkeys=$(gpg --no-permission-warning --batch --list-keys --keyid-format=long --with-colons | grep "^fpr" | sed -n 's/^fpr:::::::::\([[:alnum:]]\+\):/\1/p' | grep -v "${mykeyid}")
 
 	# TODO: keys.openpgp.org lacks a UID for our keys, need to verify email
-	gpg --no-permission-warning --batch --keyserver "${mykeyserver}" --recv-keys ${myrelkeys} || true
+	for keyserver in "${mykeyservers[@]}" ; do
+		gpg --no-permission-warning --batch --keyserver "${keyserver}" --recv-keys ${myrelkeys} || true
+	done
 
 	# Locally sign all release engineering keys.
 	for relkeyid in ${myrelkeys} ; do
@@ -100,8 +104,12 @@ fi
 # Always re-import the system keys because it might be our only source of updates
 # for e.g. revocations, renewals, etc if we're on a firewalled machine.
 gpg --no-permission-warning --batch --import "${ROOT%/}"/usr/share/openpgp-keys/gentoo-release.asc
+
 # Refresh all keys from the keyserver if we can.
-gpg --no-permission-warning --batch --keyserver "${mykeyserver}" --refresh-keys || true # TODO: keys.openpgp.org lacks a UID for our keys, need to verify email
+for keyserver in "${mykeyservers[@]}" ; do
+	# TODO: keys.openpgp.org lacks a UID for our keys, need to verify email
+	gpg --no-permission-warning --batch --keyserver "${keyserver}" --refresh-keys || true
+done
 
 # Make sure the trustdb is world-readable (again).
 chmod ugo+r "${GNUPGHOME}/trustdb.gpg"
