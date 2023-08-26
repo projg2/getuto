@@ -75,10 +75,11 @@ if [[ ! -d ${GNUPGHOME} ]] ; then
 
 	myrelkeys=$(gpg --no-permission-warning --batch --list-keys --keyid-format=long --with-colons | grep "^fpr" | sed -n 's/^fpr:::::::::\([[:alnum:]]\+\):/\1/p' | grep -v "${mykeyid}")
 
+	# TODO: keys.openpgp.org lacks a UID for our keys, need to verify email
+	gpg --no-permission-warning --batch --keyserver "${mykeyserver}" --recv-keys ${myrelkeys} || true
+
 	# Locally sign all release engineering keys.
 	for relkeyid in ${myrelkeys} ; do
-		gpg --no-permission-warning --batch --keyserver "${mykeyserver}" --recv-keys "${relkeyid}" || true # TODO: keys.openpgp.org lacks a UID for our keys, need to verify email
-
 		# We have to use --quick-lsign-key for this to work with batch: https://dev.gnupg.org/T1606
 		if ! gpg --no-permission-warning --batch --yes --no-tty --passphrase-file="${GNUPGHOME}/pass" --pinentry-mode loopback --quick-lsign-key "${relkeyid}" ; then
 			# But that won't work for subkeys, so fall back to a hackier method.
