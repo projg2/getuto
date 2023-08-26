@@ -99,17 +99,20 @@ if [[ ! -d ${GNUPGHOME} ]] ; then
 	# Make sure the trustdb is world-readable.
 	chmod ugo+r "${GNUPGHOME}/trustdb.gpg"
 
+else
+	# The keydir already exists, so our job is to just to refresh and check
+	# permissions.
+
+	# Always re-import the system keys because it might be our only source of updates
+	# for e.g. revocations, renewals, etc if we're on a firewalled machine.
+	gpg --no-permission-warning --batch --import "${ROOT%/}"/usr/share/openpgp-keys/gentoo-release.asc
+
+	# Refresh all keys from the keyserver if we can.
+	for keyserver in "${mykeyservers[@]}" ; do
+		# TODO: keys.openpgp.org lacks a UID for our keys, need to verify email
+		gpg --no-permission-warning --batch --keyserver "${keyserver}" --refresh-keys || true
+	done
 fi
-
-# Always re-import the system keys because it might be our only source of updates
-# for e.g. revocations, renewals, etc if we're on a firewalled machine.
-gpg --no-permission-warning --batch --import "${ROOT%/}"/usr/share/openpgp-keys/gentoo-release.asc
-
-# Refresh all keys from the keyserver if we can.
-for keyserver in "${mykeyservers[@]}" ; do
-	# TODO: keys.openpgp.org lacks a UID for our keys, need to verify email
-	gpg --no-permission-warning --batch --keyserver "${keyserver}" --refresh-keys || true
-done
 
 # Make sure the trustdb is world-readable (again).
 chmod ugo+r "${GNUPGHOME}/trustdb.gpg"
