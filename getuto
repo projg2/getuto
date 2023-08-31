@@ -18,6 +18,8 @@
 # sec-keys/openpgp-keys-gentoo-release
 set -e
 
+QUIET=''
+
 [[ $(whoami) == 'root' ]] || { echo "${0} must be run as root!" ; exit 100 ; }
 
 mykeyservers=(
@@ -26,6 +28,13 @@ mykeyservers=(
 )
 
 export GNUPGHOME="${ROOT%/}"/etc/portage/gnupg
+
+[[ $1 == '-q' ]] && QUIET=1
+
+QUIET_GPG=''
+if [[ -n ${QUIET} ]] ; then
+	QUIET_GPG='--quiet'
+fi
 
 gpgconf --kill gpg-agent
 
@@ -55,7 +64,7 @@ if [[ ! -d ${GNUPGHOME} ]] ; then
 	%echo done
 	EOF
 
-	gpg --no-permission-warning --batch --generate-key "${KEY_CONFIG_FILE}"
+	gpg ${QUIET_GPG} --no-permission-warning --batch --generate-key "${KEY_CONFIG_FILE}"
 	rm -f "${KEY_CONFIG_FILE}"
 
 	touch "${GNUPGHOME}/pass"
@@ -71,7 +80,7 @@ if [[ ! -d ${GNUPGHOME} ]] ; then
 		exit 1
 	fi
 
-	gpg --no-permission-warning --batch --import "${ROOT%/}"/usr/share/openpgp-keys/gentoo-release.asc
+	gpg ${QUIET_GPG} --no-permission-warning --batch --import "${ROOT%/}"/usr/share/openpgp-keys/gentoo-release.asc
 
 	# List all release engineering keys.
 	# See https://serverfault.com/a/946428.
@@ -79,22 +88,22 @@ if [[ ! -d ${GNUPGHOME} ]] ; then
 
 	# TODO: keys.openpgp.org lacks a UID for our keys, need to verify email
 	for keyserver in "${mykeyservers[@]}" ; do
-		gpg --no-permission-warning --batch --keyserver "${keyserver}" --recv-keys ${myrelkeys} || true
+		gpg ${QUIET_GPG} --no-permission-warning --batch --keyserver "${keyserver}" --recv-keys ${myrelkeys} || true
 	done
 
 	# Locally sign all release engineering keys.
 	for relkeyid in ${myrelkeys} ; do
 		# We have to use --quick-lsign-key for this to work with batch: https://dev.gnupg.org/T1606
-		if ! gpg --no-permission-warning --batch --yes --no-tty --passphrase-file="${GNUPGHOME}/pass" --pinentry-mode loopback --quick-lsign-key "${relkeyid}" ; then
+		if ! gpg ${QUIET_GPG} --no-permission-warning --batch --yes --no-tty --passphrase-file="${GNUPGHOME}/pass" --pinentry-mode loopback --quick-lsign-key "${relkeyid}" ; then
 			# But that won't work for subkeys, so fall back to a hackier method.
 			set -o pipefail
-			echo -e "y\ny\n" | gpg --command-fd 0 --no-permission-warning --yes --no-tty --passphrase-file="${GNUPGHOME}/pass" --pinentry-mode loopback --lsign-key "${relkeyid}"
+			echo -e "y\ny\n" | gpg ${QUIET_GPG} --command-fd 0 --no-permission-warning --yes --no-tty --passphrase-file="${GNUPGHOME}/pass" --pinentry-mode loopback --lsign-key "${relkeyid}"
 			set -u pipefail
 		fi
 	done
 
 	# Update the trustdb
-	gpg --no-permission-warning --batch --check-trustdb
+	gpg ${QUIET_GPG} --no-permission-warning --batch --check-trustdb
 
 	# Make sure the trustdb is world-readable.
 	chmod ugo+r "${GNUPGHOME}/trustdb.gpg"
@@ -105,14 +114,17 @@ else
 
 	# Always re-import the system keys because it might be our only source of updates
 	# for e.g. revocations, renewals, etc if we're on a firewalled machine.
-	gpg --no-permission-warning --batch --import "${ROOT%/}"/usr/share/openpgp-keys/gentoo-release.asc
+	gpg ${QUIET_GPG} --no-permission-warning --batch --import "${ROOT%/}"/usr/share/openpgp-keys/gentoo-release.asc
 
 	# Refresh all keys from the keyserver if we can.
 	for keyserver in "${mykeyservers[@]}" ; do
 		# TODO: keys.openpgp.org lacks a UID for our keys, need to verify email
-		gpg --no-permission-warning --batch --keyserver "${keyserver}" --refresh-keys || true
+		gpg ${QUIET_GPG} --no-permission-warning --batch --keyserver "${keyserver}" --refresh-keys || true
 	done
 fi
 
 # Make sure the trustdb is world-readable (again).
 chmod ugo+r "${GNUPGHOME}/trustdb.gpg"
+
+# Clean up.
+gpgconf --kill gpg-agent
