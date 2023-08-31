@@ -15,16 +15,34 @@ export ROOT="$(mktemp -d)"
 mkdir -p "${ROOT}"/usr/share/openpgp-keys
 ln -s "${REAL_ROOT}"/usr/share/openpgp-keys/gentoo-release.asc "${ROOT}"/usr/share/openpgp-keys/gentoo-release.asc
 
+mkdir -p "${ROOT}"/tmp/binpkg
+tar xvf libc-1-r1-1.gpkg.tar -C "${ROOT}"/tmp/binpkg
+
+echo Testing normal operation
+
 # Generate a keyring using getuto.
 bash -x ./getuto
 
 # Make sure the newly-generated keyring works.
-export GNUPGHOME="${ROOT%/}"/etc/portage/gnupg
-mkdir -p "${ROOT}"/tmp/binpkg
-tar xvf libc-1-r1-1.gpkg.tar -C "${ROOT}"/tmp/binpkg
 for file in image.tar.bz2 metadata.tar.bz2 ; do
-	gpg --verify "${ROOT}"/tmp/binpkg/libc-1-r1-1/${file}.sig
+	gpg --home "${ROOT%/}"/etc/portage/gnupg --verify "${ROOT}"/tmp/binpkg/libc-1-r1-1/${file}.sig
 done
 
 # Try to refresh an existing keyring.
 bash -x ./getuto
+
+# Clean up
+rm -r "${ROOT%/}"/etc/portage/gnupg
+
+echo Testing quiet operation
+
+# Generate a keyring using getuto.
+bash -x ./getuto -q
+
+# Make sure the newly-generated keyring works.
+for file in image.tar.bz2 metadata.tar.bz2 ; do
+	gpg --home "${ROOT%/}"/etc/portage/gnupg --verify "${ROOT}"/tmp/binpkg/libc-1-r1-1/${file}.sig
+done
+
+# Try to refresh an existing keyring.
+bash -x ./getuto -q
