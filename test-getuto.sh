@@ -34,10 +34,10 @@ bash -x ./getuto
 # Clean up
 rm -r "${ROOT%/}"/etc/portage/gnupg
 
-echo Testing quiet operation
+echo Testing verbose operation
 
 # Generate a keyring using getuto.
-bash -x ./getuto -q
+bash -x ./getuto -v
 
 # Make sure the newly-generated keyring works.
 for file in image.tar.bz2 metadata.tar.bz2 ; do
@@ -45,4 +45,4 @@ for file in image.tar.bz2 metadata.tar.bz2 ; do
 done
 
 # Try to refresh an existing keyring.
-bash -x ./getuto -q
+bash -x ./getuto -v

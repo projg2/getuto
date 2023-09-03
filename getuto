@@ -18,7 +18,7 @@
 # sec-keys/openpgp-keys-gentoo-release
 set -e
 
-QUIET=''
+QUIET='1'
 
 [[ $(whoami) == 'root' ]] || { echo "${0} must be run as root!" ; exit 100 ; }
 
@@ -29,7 +29,7 @@ mykeyservers=(
 
 export GNUPGHOME="${ROOT%/}"/etc/portage/gnupg
 
-[[ $1 == '-q' ]] && QUIET=1
+[[ $1 == '-v' ]] && QUIET=''
 
 QUIET_GPG=''
 if [[ -n ${QUIET} ]] ; then
