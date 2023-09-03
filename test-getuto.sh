@@ -7,6 +7,11 @@ whoami() {
 }
 
 export -f whoami
+
+# Sanitize environment
+export PORTAGE_GPG_DIR=
+export PORTAGE_GPG_KEY=
+
 # Keep the real root around before we override its value so we can grab a copy of
 # gentoo-release.asc.
 export REAL_ROOT="${ROOT%/}"
