@@ -112,15 +112,35 @@ else
 	# The keydir already exists, so our job is to just to refresh and check
 	# permissions.
 
-	# Always re-import the system keys because it might be our only source of updates
-	# for e.g. revocations, renewals, etc if we're on a firewalled machine.
-	gpg ${QUIET_GPG} --no-permission-warning --batch --import "${ROOT%/}"/usr/share/openpgp-keys/gentoo-release.asc
+	# We want to be able to filter error messages
+	export LC_ALL=C.UTF8
 
-	# Refresh all keys from the keyserver if we can.
-	for keyserver in "${mykeyservers[@]}" ; do
-		# TODO: keys.openpgp.org lacks a UID for our keys, need to verify email
-		gpg ${QUIET_GPG} --no-permission-warning --batch --keyserver "${keyserver}" --refresh-keys || true
-	done
+	if [[ -n ${QUIET} ]] ; then
+		{
+			# Always re-import the system keys because it might be our only source of updates
+			# for e.g. revocations, renewals, etc if we're on a firewalled machine.
+			gpg ${QUIET_GPG} --no-permission-warning --batch --import "${ROOT%/}"/usr/share/openpgp-keys/gentoo-release.asc
+
+			# Refresh all keys from the keyserver if we can.
+			for keyserver in "${mykeyservers[@]}" ; do
+				# TODO: keys.openpgp.org lacks a UID for our keys, need to verify email
+				gpg ${QUIET_GPG} --no-permission-warning --batch --keyserver "${keyserver}" --refresh-keys || true
+			done
+		} |& \
+			grep -v ": no user ID"
+	else
+		echo "Refreshing package verification keys ..."
+
+		# Always re-import the system keys because it might be our only source of updates
+		# for e.g. revocations, renewals, etc if we're on a firewalled machine.
+		gpg ${QUIET_GPG} --no-permission-warning --batch --import "${ROOT%/}"/usr/share/openpgp-keys/gentoo-release.asc
+
+		# Refresh all keys from the keyserver if we can.
+		for keyserver in "${mykeyservers[@]}" ; do
+			# TODO: keys.openpgp.org lacks a UID for our keys, need to verify email
+			gpg ${QUIET_GPG} --no-permission-warning --batch --keyserver "${keyserver}" --refresh-keys || true
+		done
+	fi
 fi
 
 # Make sure the trustdb is world-readable (again).
