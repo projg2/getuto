@@ -16,6 +16,8 @@
 # app-crypt/gnupg
 # dev-libs/openssl
 # sec-keys/openpgp-keys-gentoo-release
+# sys-apps/gentoo-functions
+
 set -e
 
 QUIET='1'
@@ -36,10 +38,14 @@ if [[ -n ${QUIET} ]] ; then
 	QUIET_GPG='--quiet'
 fi
 
+source /lib/gentoo/functions.sh
+
 gpgconf --kill gpg-agent
 
 if [[ ! -d ${GNUPGHOME} ]] ; then
 	# The directory does not exist yet.
+	ebegin "Initializing ${GNUPGHOME}"
+
 	mkdir -p "${GNUPGHOME}"
 	chmod u=rwx,go=rx "${GNUPGHOME}"
 
@@ -108,9 +114,11 @@ if [[ ! -d ${GNUPGHOME} ]] ; then
 	# Make sure the trustdb is world-readable.
 	chmod ugo+r "${GNUPGHOME}/trustdb.gpg"
 
+	eend
 else
 	# The keydir already exists, so our job is to just to refresh and check
 	# permissions.
+	einfo "Updating gnupg key ring for package signatures"
 
 	# We want to be able to filter error messages
 	export LC_ALL=C.UTF8
