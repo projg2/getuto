@@ -23,31 +23,38 @@ ln -s "${REAL_ROOT}"/usr/share/openpgp-keys/gentoo-release.asc "${ROOT}"/usr/sha
 mkdir -p "${ROOT}"/tmp/binpkg
 tar xvf libc-1-r1-1.gpkg.tar -C "${ROOT}"/tmp/binpkg
 
+echo ==================================================================
 echo Testing normal operation
+echo
 
-# Generate a keyring using getuto.
+echo XXXXX Generate a keyring using getuto.
 bash -x ./getuto
 
-# Make sure the newly-generated keyring works.
+echo XXXXX Make sure the newly-generated keyring works.
 for file in image.tar.bz2 metadata.tar.bz2 ; do
 	gpg --home "${ROOT%/}"/etc/portage/gnupg --verify "${ROOT}"/tmp/binpkg/libc-1-r1-1/${file}.sig
 done
 
-# Try to refresh an existing keyring.
+echo XXXXX Try to refresh an existing keyring.
 bash -x ./getuto
 
-# Clean up
+echo XXXXX Clean up
 rm -r "${ROOT%/}"/etc/portage/gnupg
 
+echo ==================================================================
 echo Testing verbose operation
+echo
 
-# Generate a keyring using getuto.
+echo XXXXX Generate a keyring using getuto.
 bash -x ./getuto -v
 
-# Make sure the newly-generated keyring works.
+echo XXXXX Make sure the newly-generated keyring works.
 for file in image.tar.bz2 metadata.tar.bz2 ; do
 	gpg --home "${ROOT%/}"/etc/portage/gnupg --verify "${ROOT}"/tmp/binpkg/libc-1-r1-1/${file}.sig
 done
 
-# Try to refresh an existing keyring.
+echo XXXXX Try to refresh an existing keyring.
 bash -x ./getuto -v
+
+echo XXXXX Clean up
+rm -r "${ROOT%/}"/etc/portage/gnupg
