@@ -38,7 +38,19 @@ if [[ -n ${QUIET} ]] ; then
 	QUIET_GPG='--quiet'
 fi
 
-source /lib/gentoo/functions.sh
+if [[ -f /lib/gentoo/functions.sh ]] ; then
+	source /lib/gentoo/functions.sh
+else
+	ebegin() {
+		echo "$@"
+	}
+	eend() {
+		true
+	}
+	einfo() {
+		echo "$@"
+	}
+fi
 
 gpgconf --kill gpg-agent
 
