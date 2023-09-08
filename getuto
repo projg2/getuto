@@ -38,6 +38,8 @@ if [[ -n ${QUIET} ]] ; then
 	QUIET_GPG='--quiet'
 fi
 
+LASTRUNFILE=${GNUPGHOME}/.getuto.last
+
 if [[ -f /lib/gentoo/functions.sh ]] ; then
 	source /lib/gentoo/functions.sh
 else
@@ -57,15 +59,33 @@ gpgconf --kill gpg-agent
 
 
 getuto_refresh() {
-	# Always re-import the system keys because it might be our only source of updates
-	# for e.g. revocations, renewals, etc if we're on a firewalled machine.
-	gpg ${QUIET_GPG} --no-permission-warning --batch --import "${ROOT%/}"/usr/share/openpgp-keys/gentoo-release.asc
+	NOW=$(date +%s)
+	if [[ -f ${LASTRUNFILE} ]] ; then
+		LST=$(date -r ${LASTRUNFILE} +%s)
+	else
+		LST='0'
+	fi
+	DAY=86400
 
-	# Refresh all keys from the keyserver if we can.
-	for keyserver in "${mykeyservers[@]}" ; do
-		# TODO: keys.openpgp.org lacks a UID for our keys, need to verify email
-		gpg ${QUIET_GPG} --no-permission-warning --batch --keyserver "${keyserver}" --refresh-keys || true
-	done
+	if (( $NOW - $DAY >= $LST )) ; then
+
+		# Always re-import the system keys because it might be our only source of updates
+		# for e.g. revocations, renewals, etc if we're on a firewalled machine.
+		gpg ${QUIET_GPG} --no-permission-warning --batch --import "${ROOT%/}"/usr/share/openpgp-keys/gentoo-release.asc
+
+		# Refresh all keys from the keyserver if we can.
+		for keyserver in "${mykeyservers[@]}" ; do
+			# TODO: keys.openpgp.org lacks a UID for our keys, need to verify email
+			gpg ${QUIET_GPG} --no-permission-warning --batch --keyserver "${keyserver}" --refresh-keys || true
+		done
+
+		touch ${LASTRUNFILE}
+
+	else
+
+		[[ -n ${QUIET} ]] || einfo "   ... already uptodate."
+
+	fi
 }
 
 
