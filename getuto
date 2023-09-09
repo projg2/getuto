@@ -173,7 +173,6 @@ else
 	if [[ -n ${QUIET} ]] ; then
 		getuto_refresh |& grep -v ": no user ID"
 	else
-		echo "Refreshing package verification keys ..."
 		getuto_refresh
 	fi
 fi
