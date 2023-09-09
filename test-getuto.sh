@@ -38,6 +38,10 @@ done
 echo XXXXX Try to refresh an existing keyring.
 bash -x ./getuto
 
+# (no -x because we had a bug not found by tests which got confused by it)
+echo XXXXX Try again to check too-soon logic.
+bash ./getuto
+
 echo XXXXX Clean up
 rm -r "${ROOT%/}"/etc/portage/gnupg
 
