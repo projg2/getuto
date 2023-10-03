@@ -40,7 +40,7 @@ fi
 
 LASTRUNFILE=${GNUPGHOME}/.getuto.last
 
-if [[ -f /lib/gentoo/functions.sh ]] ; then
+if [[ -f /lib/gentoo/functions.sh ]] && [[ -v TERM ]] && [[ -n "${TERM}" ]] && [[ "${TERM}" != dumb ]] ; then
 	source /lib/gentoo/functions.sh
 else
 	ebegin() {
