@@ -69,6 +69,8 @@ getuto_refresh() {
 
 	if (( $NOW - $DAY >= $LST )) ; then
 
+		einfo "Updating gnupg key ring for package signatures"
+
 		# Always re-import the system keys because it might be our only source of updates
 		# for e.g. revocations, renewals, etc if we're on a firewalled machine.
 		gpg ${QUIET_GPG} --no-permission-warning --batch --import "${ROOT%/}"/usr/share/openpgp-keys/gentoo-release.asc
@@ -83,7 +85,7 @@ getuto_refresh() {
 
 	else
 
-		[[ -n ${QUIET} ]] || einfo "   ... already uptodate."
+		[[ -n ${QUIET} ]] || einfo "Gnupg key ring for package signatures already uptodate."
 
 	fi
 
@@ -169,7 +171,6 @@ if [[ ! -d ${GNUPGHOME} ]] ; then
 else
 	# The keydir already exists, so our job is to just to refresh and check
 	# permissions.
-	einfo "Updating gnupg key ring for package signatures"
 
 	# We want to be able to filter error messages
 	export LC_ALL=C.UTF8
