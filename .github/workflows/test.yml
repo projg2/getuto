@@ -15,9 +15,9 @@ jobs:
         emerge-webrsync
         emerge --quiet --noreplace --oneshot \
           app-crypt/gnupg \
+          dev-build/make \
           dev-libs/openssl \
-          sec-keys/openpgp-keys-gentoo-release \
-          sys-devel/make
+          sec-keys/openpgp-keys-gentoo-release
 
     - uses: actions/checkout@v3
       name: Checkout
