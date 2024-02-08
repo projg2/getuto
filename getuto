@@ -102,6 +102,10 @@ if [[ ! -d ${GNUPGHOME} ]] ; then
 	mkdir -p "${GNUPGHOME}"
 	chmod u=rwx,go=rx "${GNUPGHOME}"
 
+	cat > "${GNUPGHOME}"/dirmngr.conf <<-EOF
+	--honor-http-proxy
+	EOF
+
 	# Generate a local ultimate trust anchor key.
 	PASS="$(openssl rand -base64 32)"
 
