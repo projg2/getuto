@@ -18,8 +18,6 @@
 # sec-keys/openpgp-keys-gentoo-release
 # sys-apps/gentoo-functions
 
-set -e
-
 QUIET='1'
 
 [[ $(whoami) == 'root' ]] || { echo "${0} must be run as root!" ; exit 100 ; }
@@ -56,7 +54,7 @@ fi
 
 gpgconf --kill gpg-agent dirmngr
 
-
+set -e
 
 getuto_refresh() {
 	NOW=$(date +%s)
