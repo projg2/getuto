@@ -19,28 +19,19 @@
 # sys-apps/gentoo-functions
 
 [[ ${GETUTO_DEBUG} ]] && set -x
-
-QUIET='1'
-
 [[ $(whoami) == 'root' ]] || { echo "${0} must be run as root!" ; exit 100 ; }
 
-mykeyservers=(
-	"hkps://keys.openpgp.org"
-	"hkps://keys.gentoo.org"
-)
-
 export GNUPGHOME="${ROOT%/}"/etc/portage/gnupg
+LASTRUNFILE=${GNUPGHOME}/.getuto.last
+QUIET='1'
 
 [[ $1 == '-v' ]] && QUIET=''
-
 QUIET_GPG=''
 if [[ -n ${QUIET} ]] ; then
 	QUIET_GPG='--quiet'
 fi
 
-LASTRUNFILE=${GNUPGHOME}/.getuto.last
-
-if [[ -f /lib/gentoo/functions.sh ]] && [[ -v TERM ]] && [[ -n "${TERM}" ]] && [[ "${TERM}" != dumb ]] ; then
+if [[ -f /lib/gentoo/functions.sh && -v TERM && -n "${TERM}" && "${TERM}" != dumb ]] ; then
 	source /lib/gentoo/functions.sh
 else
 	ebegin() {
@@ -55,8 +46,12 @@ else
 fi
 
 gpgconf --kill gpg-agent dirmngr
-
 set -e
+
+mykeyservers=(
+	"hkps://keys.openpgp.org"
+	"hkps://keys.gentoo.org"
+)
 
 getuto_refresh() {
 	NOW=$(date +%s)
@@ -67,9 +62,8 @@ getuto_refresh() {
 	fi
 	DAY=86400
 
-	if (( $NOW - $DAY >= $LST )) ; then
-
-		einfo "Updating gnupg key ring for package signatures"
+	if (( ${NOW} - ${DAY} >= ${LST} )) ; then
+		einfo "Updating gnupg keyring for package signatures"
 
 		# Always re-import the system keys because it might be our only source of updates
 		# for e.g. revocations, renewals, etc if we're on a firewalled machine.
@@ -85,11 +79,8 @@ getuto_refresh() {
 		gpg ${QUIET_GPG} --auto-key-locate=clear,nodefault,wkd --locate-key releng@gentoo.org infrastructure@gentoo.org repomirrorci@gentoo.org || true
 
 		touch ${LASTRUNFILE}
-
 	else
-
-		[[ -n ${QUIET} ]] || einfo "Gnupg key ring for package signatures already uptodate."
-
+		[[ -n ${QUIET} ]] || einfo "gnupg keyring for package signatures already up-to-date."
 	fi
 
 	# If we got here, everything is fine. Empty a silly string to keep the grep happy
