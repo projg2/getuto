@@ -80,6 +80,11 @@ getuto_refresh() {
 			# TODO: keys.openpgp.org lacks a UID for our keys, need to verify email
 			gpg ${QUIET_GPG} --no-permission-warning --batch --keyserver "${keyserver}" --refresh-keys || true
 		done
+		# We only sign (-> ultimate trust) the keys we originally import, so this is fine and
+		# just serves as an additional refresh method.
+		for email in releng@gentoo.org infrastructure@gentoo.org repomirrorci@gentoo.org ; do
+			gpg --auto-key-locate=clear,nodefault,wkd --locate-key "${email}" || true
+		done
 
 		touch ${LASTRUNFILE}
 
@@ -156,6 +161,11 @@ if [[ ! -d ${GNUPGHOME} ]] ; then
 	# TODO: keys.openpgp.org lacks a UID for our keys, need to verify email
 	for keyserver in "${mykeyservers[@]}" ; do
 		gpg ${QUIET_GPG} --no-permission-warning --batch --keyserver "${keyserver}" --recv-keys ${myrelkeys} || true
+	done
+	# We only sign (-> ultimate trust) the keys we originally import, so this is fine and
+	# just serves as an additional refresh method.
+	for email in releng@gentoo.org infrastructure@gentoo.org repomirrorci@gentoo.org ; do
+		gpg --auto-key-locate=clear,nodefault,wkd --locate-key "${email}" || true
 	done
 
 	# Locally sign all release engineering keys.
