@@ -106,6 +106,10 @@ if [[ ! -d ${GNUPGHOME} ]] ; then
 	honor-http-proxy
 	EOF
 
+	cat > "${GNUPGHOME}"/gpg-agent.conf <<-EOF
+	disable-scdaemon
+	EOF
+
 	# Generate a local ultimate trust anchor key.
 	PASS="$(openssl rand -base64 32)"
 
