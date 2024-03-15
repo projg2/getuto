@@ -103,7 +103,7 @@ if [[ ! -d ${GNUPGHOME} ]] ; then
 	chmod u=rwx,go=rx "${GNUPGHOME}"
 
 	cat > "${GNUPGHOME}"/dirmngr.conf <<-EOF
-	--honor-http-proxy
+	honor-http-proxy
 	EOF
 
 	# Generate a local ultimate trust anchor key.
