@@ -22,14 +22,13 @@
 [[ $(whoami) == 'root' ]] || { echo "${0} must be run as root!" ; exit 100 ; }
 
 export GNUPGHOME="${ROOT%/}"/etc/portage/gnupg
+
 LASTRUNFILE=${GNUPGHOME}/.getuto.last
 QUIET='1'
+QUIET_GPG=''
 
 [[ $1 == '-v' ]] && QUIET=''
-QUIET_GPG=''
-if [[ -n ${QUIET} ]] ; then
-	QUIET_GPG='--quiet'
-fi
+[[ -n ${QUIET} ]] && QUIET_GPG='--quiet'
 
 if [[ -f /lib/gentoo/functions.sh && -v TERM && -n "${TERM}" && "${TERM}" != dumb ]] ; then
 	source /lib/gentoo/functions.sh
@@ -54,13 +53,13 @@ mykeyservers=(
 )
 
 getuto_refresh() {
+	DAY=86400
 	NOW=$(date +%s)
 	if [[ -f ${LASTRUNFILE} ]] ; then
 		LST=$(date -r ${LASTRUNFILE} +%s)
 	else
 		LST='0'
 	fi
-	DAY=86400
 
 	if (( ${NOW} - ${DAY} >= ${LST} )) ; then
 		einfo "Updating gnupg keyring for package signatures"
@@ -132,7 +131,10 @@ if [[ ! -d ${GNUPGHOME} ]] ; then
 	chmod 600 "${GNUPGHOME}/pass"
 	echo "${PASS}" > "${GNUPGHOME}/pass"
 
-	gpg --no-permission-warning --batch --list-secret-keys --keyid-format=long --with-colons | grep "^fpr" | sed -n 's/^fpr:::::::::\([[:alnum:]]\+\):/\1/p' > "${GNUPGHOME}/mykeyid"
+	gpg --no-permission-warning --batch --list-secret-keys --keyid-format=long --with-colons \
+		| grep "^fpr" \
+		| sed -n 's/^fpr:::::::::\([[:alnum:]]\+\):/\1/p' \
+	> "${GNUPGHOME}/mykeyid"
 	mykeyid=$(<"${GNUPGHOME}/mykeyid")
 
 	# Import all release engineering keys.
@@ -143,9 +145,11 @@ if [[ ! -d ${GNUPGHOME} ]] ; then
 
 	gpg ${QUIET_GPG} --no-permission-warning --batch --import "${ROOT%/}"/usr/share/openpgp-keys/gentoo-release.asc
 
-	# List all release engineering keys.
-	# See https://serverfault.com/a/946428.
-	myrelkeys=$(gpg --no-permission-warning --batch --list-keys --keyid-format=long --with-colons | grep "^fpr" | sed -n 's/^fpr:::::::::\([[:alnum:]]\+\):/\1/p' | grep -v "${mykeyid}")
+	# List all release engineering keys (https://serverfault.com/a/946428)
+	myrelkeys=$(gpg --no-permission-warning --batch --list-keys --keyid-format=long --with-colons \
+			| grep "^fpr" \
+			| sed -n 's/^fpr:::::::::\([[:alnum:]]\+\):/\1/p' \
+			| grep -v "${mykeyid}")
 
 	# TODO: keys.openpgp.org lacks a UID for our keys, need to verify email
 	for keyserver in "${mykeyservers[@]}" ; do
