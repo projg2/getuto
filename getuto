@@ -97,6 +97,7 @@ if [[ ! -d ${GNUPGHOME} ]] ; then
 
 	cat > "${GNUPGHOME}"/dirmngr.conf <<-EOF
 	honor-http-proxy
+	no-use-tor
 	EOF
 
 	cat > "${GNUPGHOME}"/gpg-agent.conf <<-EOF
