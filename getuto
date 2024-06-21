@@ -104,6 +104,11 @@ if [[ ! -d ${GNUPGHOME} ]] ; then
 	disable-scdaemon
 	EOF
 
+	cat > "${GNUPGHOME}"/gpg.conf <<-EOF
+	no-greeting
+	no-permission-warning
+	EOF
+
 	# Generate a local ultimate trust anchor key.
 	PASS="$(openssl rand -base64 32)"
 
