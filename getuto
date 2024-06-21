@@ -18,7 +18,7 @@
 # sec-keys/openpgp-keys-gentoo-release
 # sys-apps/gentoo-functions
 
-[[ ${GETUTO_DEBUG} ]] && set -x
+[[ ${PORTAGE_DEBUG} || ${GETUTO_DEBUG} ]] && set -x
 [[ $(whoami) == 'root' ]] || { echo "${0} must be run as root!" ; exit 100 ; }
 
 export GNUPGHOME="${ROOT%/}"/etc/portage/gnupg
