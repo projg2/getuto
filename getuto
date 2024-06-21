@@ -172,7 +172,7 @@ if [[ ! -d ${GNUPGHOME} ]] ; then
 	for relkeyid in ${myrelkeys} ; do
 		# We have to use --quick-lsign-key for this to work with batch: https://dev.gnupg.org/T1606
 		if ! gpg ${QUIET_GPG} --batch --yes --no-tty --passphrase-file="${GNUPGHOME}/pass" --pinentry-mode loopback --quick-lsign-key "${relkeyid}" ; then
-			# But that won't work for subkeys, so fall back to a hackier method.
+			# But that won't work for subkeys, so fallback to a hackier method.
 			set -o pipefail
 			echo -e "y\ny\n" | gpg ${QUIET_GPG} --command-fd 0 --yes --no-tty --passphrase-file="${GNUPGHOME}/pass" --pinentry-mode loopback --lsign-key "${relkeyid}"
 			set +o pipefail
