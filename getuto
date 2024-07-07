@@ -64,7 +64,7 @@ getuto_refresh() {
 	fi
 
 	if (( ${NOW} - ${DAY} >= ${LST} )) ; then
-		einfo "Updating gnupg keyring for package signatures"
+		einfo "Updating gnupg keyring for package signatures" >&3
 
 		# Always re-import the system keys because it might be our only source of updates
 		# for e.g. revocations, renewals, etc if we're on a firewalled machine.
@@ -81,7 +81,7 @@ getuto_refresh() {
 
 		touch ${LASTRUNFILE}
 	else
-		[[ -n ${QUIET} ]] || einfo "gnupg keyring for package signatures already up-to-date."
+		[[ -n ${QUIET} ]] || einfo "gnupg keyring for package signatures already up-to-date." >&3
 	fi
 }
 
@@ -191,11 +191,13 @@ else
 	# We want to be able to filter error messages
 	export LC_ALL=C.UTF8
 
-	if [[ -n ${QUIET} ]] ; then
-		getuto_refresh >/dev/null 2>&1
-	else
-		getuto_refresh
-	fi
+	{
+		if [[ -n ${QUIET} ]] ; then
+		    getuto_refresh >/dev/null 2>&1
+		else
+		    getuto_refresh
+		fi
+	} 3>&1
 fi
 
 # Make sure the trustdb is world-readable (again).
