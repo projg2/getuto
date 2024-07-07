@@ -83,10 +83,6 @@ getuto_refresh() {
 	else
 		[[ -n ${QUIET} ]] || einfo "gnupg keyring for package signatures already up-to-date."
 	fi
-
-	# If we got here, everything is fine. Empty a silly string to keep the grep happy
-	# on the output of getuto_refresh.
-	[[ -n ${QUIET} ]] && echo OK || true
 }
 
 
@@ -196,7 +192,7 @@ else
 	export LC_ALL=C.UTF8
 
 	if [[ -n ${QUIET} ]] ; then
-		getuto_refresh |& grep -qv ": no user ID"
+		getuto_refresh >/dev/null 2>&1
 	else
 		getuto_refresh
 	fi
