@@ -73,11 +73,12 @@ getuto_refresh() {
 		# Refresh all keys from the keyserver if we can.
 		for keyserver in "${mykeyservers[@]}" ; do
 			# TODO: keys.openpgp.org lacks a UID for our keys, need to verify email
-			gpg ${QUIET_GPG} --batch --keyserver "${keyserver}" --refresh-keys || true
+			gpg ${QUIET_GPG} --batch --keyserver "${keyserver}" --refresh-keys &
 		done
 		# We only sign (-> ultimate trust) the keys we originally import, so this is fine and
 		# just serves as an additional refresh method.
-		gpg ${QUIET_GPG} --auto-key-locate=clear,nodefault,wkd --locate-key releng@gentoo.org infrastructure@gentoo.org repomirrorci@gentoo.org || true
+		gpg ${QUIET_GPG} --auto-key-locate=clear,nodefault,wkd --locate-key releng@gentoo.org infrastructure@gentoo.org repomirrorci@gentoo.org &
+		wait
 
 		touch ${LASTRUNFILE}
 	else
