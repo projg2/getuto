@@ -28,6 +28,8 @@ QUIET='1'
 QUIET_GPG=''
 
 [[ $1 == '-v' ]] && QUIET=''
+#  If QUIET is enabled, pass '--quiet' and suppress GPG homedir permission warnings
+#  These permission warnings cannot be suppressed using gpg.conf
 [[ -n ${QUIET} ]] && QUIET_GPG='--quiet --no-permission-warning'
 
 if [[ -f /lib/gentoo/functions.sh && -v TERM && -n "${TERM}" && "${TERM}" != dumb ]] ; then
@@ -109,7 +111,6 @@ if [[ ! -d ${GNUPGHOME} ]] ; then
 
 	cat > "${GNUPGHOME}"/gpg.conf <<-EOF
 	no-greeting
-	no-permission-warning
 	EOF
 
 	# Generate a local ultimate trust anchor key.
