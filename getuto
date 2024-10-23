@@ -71,12 +71,14 @@ getuto_refresh() {
 		# Refresh all keys from the keyserver if we can.
 		for keyserver in "${mykeyservers[@]}" ; do
 			# TODO: keys.openpgp.org lacks a UID for our keys, need to verify email
-			gpg ${QUIET_GPG} --no-permission-warning --batch --keyserver "${keyserver}" --refresh-keys || true
+			einfo "Refreshing keys from: ${keyserver}"
+			gpg ${QUIET_GPG} --no-permission-warning --batch --keyserver "${keyserver}" --refresh-keys || true &
 		done
 		# We only sign (-> ultimate trust) the keys we originally import, so this is fine and
 		# just serves as an additional refresh method.
-		gpg ${QUIET_GPG} --no-permission-warning --auto-key-locate=clear,nodefault,wkd --locate-key releng@gentoo.org infrastructure@gentoo.org repomirrorci@gentoo.org || true
-
+		einfo "Refreshing keys using WKD."
+		gpg ${QUIET_GPG} --no-permission-warning --auto-key-locate=clear,nodefault,wkd --locate-key releng@gentoo.org infrastructure@gentoo.org repomirrorci@gentoo.org || true &
+		wait
 		touch ${LASTRUNFILE}
 	else
 		[[ -n ${QUIET} ]] || einfo "gnupg keyring for package signatures already up-to-date."
