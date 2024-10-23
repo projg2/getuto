@@ -141,7 +141,7 @@ if [[ ! -d ${GNUPGHOME} ]] ; then
 	chmod 600 "${GNUPGHOME}/pass"
 	echo "${PASS}" > "${GNUPGHOME}/pass"
 
-	gpg --batch --list-secret-keys --keyid-format=long --with-colons \
+	gpg ${QUIET_GPG} --batch --list-secret-keys --keyid-format=long --with-colons \
 		| grep "^fpr" \
 		| sed -n 's/^fpr:::::::::\([[:alnum:]]\+\):/\1/p' \
 	> "${GNUPGHOME}/mykeyid"
@@ -156,7 +156,7 @@ if [[ ! -d ${GNUPGHOME} ]] ; then
 	gpg ${QUIET_GPG} --batch --import "${ROOT%/}"/usr/share/openpgp-keys/gentoo-release.asc
 
 	# List all release engineering keys (https://serverfault.com/a/946428)
-	myrelkeys=$(gpg --batch --list-keys --keyid-format=long --with-colons \
+	myrelkeys=$(gpg ${QUIET_GPG} --batch --list-keys --keyid-format=long --with-colons \
 			| grep "^fpr" \
 			| sed -n 's/^fpr:::::::::\([[:alnum:]]\+\):/\1/p' \
 			| grep -v "${mykeyid}")
