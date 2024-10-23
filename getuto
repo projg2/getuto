@@ -28,7 +28,7 @@ QUIET='1'
 QUIET_GPG=''
 
 [[ $1 == '-v' ]] && QUIET=''
-[[ -n ${QUIET} ]] && QUIET_GPG='--quiet'
+[[ -n ${QUIET} ]] && QUIET_GPG='--quiet --no-permission-warning'
 
 if [[ -f /lib/gentoo/functions.sh && -v TERM && -n "${TERM}" && "${TERM}" != dumb ]] ; then
 	source /lib/gentoo/functions.sh
@@ -66,16 +66,16 @@ getuto_refresh() {
 
 		# Always re-import the system keys because it might be our only source of updates
 		# for e.g. revocations, renewals, etc if we're on a firewalled machine.
-		gpg ${QUIET_GPG} --no-permission-warning --batch --import "${ROOT%/}"/usr/share/openpgp-keys/gentoo-release.asc
+		gpg ${QUIET_GPG} --batch --import "${ROOT%/}"/usr/share/openpgp-keys/gentoo-release.asc
 
 		# Refresh all keys from the keyserver if we can.
 		for keyserver in "${mykeyservers[@]}" ; do
 			# TODO: keys.openpgp.org lacks a UID for our keys, need to verify email
-			gpg ${QUIET_GPG} --no-permission-warning --batch --keyserver "${keyserver}" --refresh-keys || true
+			gpg ${QUIET_GPG} --batch --keyserver "${keyserver}" --refresh-keys || true
 		done
 		# We only sign (-> ultimate trust) the keys we originally import, so this is fine and
 		# just serves as an additional refresh method.
-		gpg ${QUIET_GPG} --no-permission-warning --auto-key-locate=clear,nodefault,wkd --locate-key releng@gentoo.org infrastructure@gentoo.org repomirrorci@gentoo.org || true
+		gpg ${QUIET_GPG} --auto-key-locate=clear,nodefault,wkd --locate-key releng@gentoo.org infrastructure@gentoo.org repomirrorci@gentoo.org || true
 
 		touch ${LASTRUNFILE}
 	else
