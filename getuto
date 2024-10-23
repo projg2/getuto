@@ -185,6 +185,7 @@ if [[ ! -d ${GNUPGHOME} ]] ; then
 	# Make sure the trustdb is world-readable.
 	chmod ugo+r "${GNUPGHOME}/trustdb.gpg"
 
+	touch ${LASTRUNFILE}
 	eend
 else
 	# The keydir already exists, so our job is to just to refresh and check
