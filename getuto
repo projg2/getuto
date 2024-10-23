@@ -159,11 +159,13 @@ if [[ ! -d ${GNUPGHOME} ]] ; then
 
 	# TODO: keys.openpgp.org lacks a UID for our keys, need to verify email
 	for keyserver in "${mykeyservers[@]}" ; do
-		gpg ${QUIET_GPG} --batch --keyserver "${keyserver}" --recv-keys ${myrelkeys} || true
+		gpg ${QUIET_GPG} --batch --keyserver "${keyserver}" --recv-keys ${myrelkeys} &
 	done
 	# We only sign (-> ultimate trust) the keys we originally import, so this is fine and
 	# just serves as an additional refresh method.
-	gpg ${QUIET_GPG} --auto-key-locate=clear,nodefault,wkd --locate-key releng@gentoo.org infrastructure@gentoo.org repomirrorci@gentoo.org || true
+	gpg ${QUIET_GPG} --auto-key-locate=clear,nodefault,wkd --locate-key releng@gentoo.org infrastructure@gentoo.org repomirrorci@gentoo.org &
+
+	wait
 
 	# Locally sign all release engineering keys.
 	for relkeyid in ${myrelkeys} ; do
