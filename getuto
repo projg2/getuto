@@ -71,12 +71,14 @@ getuto_refresh() {
 		# Refresh all keys from the keyserver if we can.
 		for keyserver in "${mykeyservers[@]}" ; do
 			# TODO: keys.openpgp.org lacks a UID for our keys, need to verify email
-			gpg ${QUIET_GPG} --no-permission-warning --batch --keyserver "${keyserver}" --refresh-keys || true
+			einfo "Refreshing keys from: ${keyserver}"
+			gpg ${QUIET_GPG} --no-permission-warning --batch --keyserver "${keyserver}" --refresh-keys || true &
 		done
 		# We only sign (-> ultimate trust) the keys we originally import, so this is fine and
 		# just serves as an additional refresh method.
-		gpg ${QUIET_GPG} --no-permission-warning --auto-key-locate=clear,nodefault,wkd --locate-key releng@gentoo.org infrastructure@gentoo.org repomirrorci@gentoo.org || true
-
+		einfo "Refreshing keys using WKD."
+		gpg ${QUIET_GPG} --no-permission-warning --auto-key-locate=clear,nodefault,wkd --locate-key releng@gentoo.org infrastructure@gentoo.org repomirrorci@gentoo.org || true &
+		wait
 		touch ${LASTRUNFILE}
 	else
 		[[ -n ${QUIET} ]] || einfo "gnupg keyring for package signatures already up-to-date."
@@ -162,14 +164,19 @@ if [[ ! -d ${GNUPGHOME} ]] ; then
 
 	# TODO: keys.openpgp.org lacks a UID for our keys, need to verify email
 	for keyserver in "${mykeyservers[@]}" ; do
-		gpg ${QUIET_GPG} --batch --keyserver "${keyserver}" --recv-keys ${myrelkeys} || true
+		einfo "Importing release engineering keys from: ${keyserver}"
+		gpg ${QUIET_GPG} --batch --keyserver "${keyserver}" --recv-keys ${myrelkeys} || true &
 	done
 	# We only sign (-> ultimate trust) the keys we originally import, so this is fine and
 	# just serves as an additional refresh method.
-	gpg ${QUIET_GPG} --auto-key-locate=clear,nodefault,wkd --locate-key releng@gentoo.org infrastructure@gentoo.org repomirrorci@gentoo.org || true
+	einfo "Importing release engineering keys using WKD"
+	gpg ${QUIET_GPG} --auto-key-locate=clear,nodefault,wkd --locate-key releng@gentoo.org infrastructure@gentoo.org repomirrorci@gentoo.org || true &
+
+	wait
 
 	# Locally sign all release engineering keys.
 	for relkeyid in ${myrelkeys} ; do
+		einfo "Signing key: ${relkeyid}"
 		# We have to use --quick-lsign-key for this to work with batch: https://dev.gnupg.org/T1606
 		if ! gpg ${QUIET_GPG} --batch --yes --no-tty --passphrase-file="${GNUPGHOME}/pass" --pinentry-mode loopback --quick-lsign-key "${relkeyid}" ; then
 			# But that won't work for subkeys, so fallback to a hackier method.
