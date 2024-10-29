@@ -31,7 +31,7 @@ echo XXXXX Generate a keyring using getuto.
 bash -x ./getuto
 
 echo XXXXX Make sure the newly-generated keyring works.
-for file in image.tar.bz2 metadata.tar.bz2 ; do
+for file in image.tar.xz metadata.tar.xz ; do
 	gpg --home "${ROOT%/}"/etc/portage/gnupg --verify "${ROOT}"/tmp/binpkg/libc-1-r1-1/${file}.sig
 done
 
@@ -53,7 +53,7 @@ echo XXXXX Generate a keyring using getuto.
 bash -x ./getuto -v
 
 echo XXXXX Make sure the newly-generated keyring works.
-for file in image.tar.bz2 metadata.tar.bz2 ; do
+for file in image.tar.xz metadata.tar.xz ; do
 	gpg --home "${ROOT%/}"/etc/portage/gnupg --verify "${ROOT}"/tmp/binpkg/libc-1-r1-1/${file}.sig
 done
 
