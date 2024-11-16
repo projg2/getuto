@@ -46,8 +46,7 @@ else
 	}
 fi
 
-gpgconf --kill gpg-agent
-gpgconf --kill dirmngr
+gpgconf --kill all
 set -e
 
 mykeyservers=(
@@ -207,5 +206,4 @@ fi
 chmod ugo+r "${GNUPGHOME}/trustdb.gpg"
 
 # Clean up.
-gpgconf --kill gpg-agent
-gpgconf --kill dirmngr
+gpgconf --kill all
