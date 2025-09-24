@@ -86,7 +86,7 @@ getuto_refresh() {
 }
 
 
-if [[ ! -d ${GNUPGHOME} ]] ; then
+if [[ ! -d ${GNUPGHOME} || ! -d ${GNUPGHOME}/private-keys-v1.d ]] ; then
 	# The directory does not exist yet.
 	ebegin "Initializing ${GNUPGHOME}"
 
