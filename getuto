@@ -64,7 +64,7 @@ getuto_refresh() {
 	fi
 
 	if (( ${NOW} - ${DAY} >= ${LST} )) ; then
-		einfo "Updating gnupg keyring for package signatures" >&3
+		einfo "Updating GnuPG keyring for package signatures" >&3
 
 		# Always re-import the system keys because it might be our only source of updates
 		# for e.g. revocations, renewals, etc if we're on a firewalled machine.
@@ -81,7 +81,7 @@ getuto_refresh() {
 
 		touch ${LASTRUNFILE}
 	else
-		[[ -n ${QUIET} ]] || einfo "gnupg keyring for package signatures already up-to-date." >&3
+		[[ -n ${QUIET} ]] || einfo "GnuPG keyring for package signatures already up-to-date." >&3
 	fi
 }
 
