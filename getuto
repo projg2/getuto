@@ -97,6 +97,12 @@ if [[ ! -d ${GNUPGHOME} ]] ; then
 	honor-http-proxy
 	no-use-tor
 
+	# The default of "recursive-resolver" (see "man dirmngr") may cause
+	# problems with corporate networks, where this is often prohibited.
+	# It's better to setup the DNS resolver of your choice correctly
+	# preferably with DNSSEC checks enabled and use the following setting:
+	standard-resolver
+
 	resolver-timeout 180
 	connect-timeout 180
 	EOF
