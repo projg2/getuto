@@ -27,6 +27,7 @@ LASTRUNFILE=${GNUPGHOME}/.getuto.last
 QUIET='1'
 QUIET_GPG=''
 
+# These should be greater than the timeouts specified below in dirmngr.conf
 GPG_TIMEOUT_TERM='1.75m'
 GPG_TIMEOUT_KILL='2.5m'
 
