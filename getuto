@@ -202,7 +202,7 @@ if [[ ! -d ${GNUPGHOME} ]] ; then
 
 	# The keyring directory is fully initialised now, so move it over.
 	mv ${GNUPGHOME} ${GNUPGHOME_orig}
-	GNUPGHOME=${GNUPGHOME_ORIG}
+	GNUPGHOME=${GNUPGHOME_orig}
 
 	touch ${LASTRUNFILE}
 
