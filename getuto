@@ -76,7 +76,7 @@ getuto_refresh() {
 		# Refresh all keys from the keyserver if we can.
 		for keyserver in "${mykeyservers[@]}" ; do
 			# TODO: keys.openpgp.org lacks a UID for our keys, need to verify email
-			timeout -k ${GPG_TIMEOUT_KILL} ${GPG_TIMEOUT_TERM} gpg ${QUIET_GPG} --batch --keyserver "${keyserver}" --refresh-keys || true
+			timeout -f -k ${GPG_TIMEOUT_KILL} ${GPG_TIMEOUT_TERM} gpg ${QUIET_GPG} --batch --keyserver "${keyserver}" --refresh-keys || true
 		done
 		# We only sign (-> ultimate trust) the keys we originally import, so this is fine and
 		# just serves as an additional refresh method.
@@ -98,7 +98,7 @@ if [[ ! -d ${GNUPGHOME} ]] ; then
 	# from interrupted initialisation.
 	GNUPGHOME_orig=${GNUPGHOME}
 	GNUPGHOME=${GNUPGHOME}.getuto.tmp
-	rm -r ${GNUPGHOME}
+	rm -rf ${GNUPGHOME}
 
 	mkdir -p "${GNUPGHOME}"
 	chmod u=rwx,go=rx "${GNUPGHOME}"
@@ -175,7 +175,7 @@ if [[ ! -d ${GNUPGHOME} ]] ; then
 
 	# TODO: keys.openpgp.org lacks a UID for our keys, need to verify email
 	for keyserver in "${mykeyservers[@]}" ; do
-		timeout -k ${GPG_TIMEOUT_KILL} ${GPG_TIMEOUT_TERM} gpg ${QUIET_GPG} --batch --keyserver "${keyserver}" --recv-keys ${myrelkeys} || true
+		timeout -f -k ${GPG_TIMEOUT_KILL} ${GPG_TIMEOUT_TERM} gpg ${QUIET_GPG} --batch --keyserver "${keyserver}" --recv-keys ${myrelkeys} || true
 	done
 	# We only sign (-> ultimate trust) the keys we originally import, so this is fine and
 	# just serves as an additional refresh method.
