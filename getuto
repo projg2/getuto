@@ -27,8 +27,8 @@ LASTRUNFILE=${GNUPGHOME}/.getuto.last
 QUIET='1'
 QUIET_GPG=''
 
-GPG_TIMEOUT_TERM='3.5m'
-GPG_TIMEOUT_KILL='5m'
+GPG_TIMEOUT_TERM='1.75m'
+GPG_TIMEOUT_KILL='2.5m'
 
 [[ $1 == '-v' ]] && QUIET=''
 #  If QUIET is enabled, pass '--quiet' and suppress GPG homedir permission warnings
@@ -113,8 +113,8 @@ if [[ ! -d ${GNUPGHOME} ]] ; then
 	# preferably with DNSSEC checks enabled and use the following setting:
 	standard-resolver
 
-	resolver-timeout 180
-	connect-timeout 180
+	resolver-timeout 90
+	connect-timeout 90
 	EOF
 
 	cat > "${GNUPGHOME}"/gpg-agent.conf <<-EOF
