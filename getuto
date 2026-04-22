@@ -90,10 +90,15 @@ getuto_refresh() {
 	fi
 }
 
-
+# The directory does not exist yet.
 if [[ ! -d ${GNUPGHOME} ]] ; then
-	# The directory does not exist yet.
 	ebegin "Initializing ${GNUPGHOME}"
+
+	# Do all work in a staging directory then rename it to avoid issues
+	# from interrupted initialisation.
+	GNUPGHOME_orig=${GNUPGHOME}
+	GNUPGHOME=${GNUPGHOME}.getuto.tmp
+	rm -r ${GNUPGHOME}
 
 	mkdir -p "${GNUPGHOME}"
 	chmod u=rwx,go=rx "${GNUPGHOME}"
@@ -196,6 +201,11 @@ if [[ ! -d ${GNUPGHOME} ]] ; then
 	chmod ugo+r "${GNUPGHOME}/trustdb.gpg"
 
 	touch ${LASTRUNFILE}
+
+	# The keyring directory is fully initialised now, so move it over.
+	mv ${GNUPGHOME} ${GNUPGHOME_orig}
+	GNUPGHOME=${GNUPGHOME_ORIG}
+
 	eend
 else
 	# The keydir already exists, so our job is to just to refresh and check
