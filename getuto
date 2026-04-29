@@ -21,6 +21,9 @@
 [[ ${PORTAGE_DEBUG} || ${GETUTO_DEBUG} ]] && set -x
 [[ $(whoami) == 'root' ]] || { echo "${0} must be run as root!" ; exit 100 ; }
 
+# Allow GPG to be overridden for debugging, like GPG='gpg --debug-basic'
+: ${GPG:=gpg}
+
 export GNUPGHOME="${ROOT%/}"/etc/portage/gnupg
 
 LASTRUNFILE=${GNUPGHOME}/.getuto.last
@@ -72,18 +75,18 @@ getuto_refresh() {
 
 		# Always re-import the system keys because it might be our only source of updates
 		# for e.g. revocations, renewals, etc if we're on a firewalled machine.
-		gpg ${QUIET_GPG} --batch --import "${ROOT%/}"/usr/share/openpgp-keys/gentoo-release.asc
+		${GPG} ${QUIET_GPG} --batch --import "${ROOT%/}"/usr/share/openpgp-keys/gentoo-release.asc
 
 		# Refresh all keys from the keyserver if we can.
 		for keyserver in "${mykeyservers[@]}" ; do
 			# TODO: keys.openpgp.org lacks a UID for our keys, need to verify email
-			timeout -f -k ${GPG_TIMEOUT_KILL} ${GPG_TIMEOUT_TERM} gpg ${QUIET_GPG} --batch --keyserver "${keyserver}" --refresh-keys || true
+			timeout -f -k ${GPG_TIMEOUT_KILL} ${GPG_TIMEOUT_TERM} ${GPG} ${QUIET_GPG} --batch --keyserver "${keyserver}" --refresh-keys || true
 		done
 		# We only sign (-> ultimate trust) the keys we originally import, so this is fine and
 		# just serves as an additional refresh method.
 		gpg --batch --with-colons --list-keys | grep "^uid" | cut -d: -f10 | \
 			sed -n 's/.*<\([^>]\+@[^>]\+\.[^>]\+\)>.*/\1/p' | sort -u | \
-			xargs gpg ${QUIET_GPG} --auto-key-locate=clear,nodefault,wkd --locate-key || true
+			xargs ${GPG} ${QUIET_GPG} --auto-key-locate=clear,nodefault,wkd --locate-key || true
 
 		touch ${LASTRUNFILE}
 	else
@@ -147,14 +150,14 @@ if [[ ! -d ${GNUPGHOME} ]] ; then
 	%echo done
 	EOF
 
-	gpg ${QUIET_GPG} --batch --generate-key "${KEY_CONFIG_FILE}"
+	${GPG} ${QUIET_GPG} --batch --generate-key "${KEY_CONFIG_FILE}"
 	rm -f "${KEY_CONFIG_FILE}"
 
 	touch "${GNUPGHOME}/pass"
 	chmod 600 "${GNUPGHOME}/pass"
 	echo "${PASS}" > "${GNUPGHOME}/pass"
 
-	gpg ${QUIET_GPG} --batch --list-secret-keys --keyid-format=long --with-colons \
+	${GPG} ${QUIET_GPG} --batch --list-secret-keys --keyid-format=long --with-colons \
 		| grep "^fpr" \
 		| sed -n 's/^fpr:::::::::\([[:alnum:]]\+\):/\1/p' \
 	> "${GNUPGHOME}/mykeyid"
@@ -166,37 +169,37 @@ if [[ ! -d ${GNUPGHOME} ]] ; then
 		exit 1
 	fi
 
-	gpg ${QUIET_GPG} --batch --import "${ROOT%/}"/usr/share/openpgp-keys/gentoo-release.asc
+	${GPG} ${QUIET_GPG} --batch --import "${ROOT%/}"/usr/share/openpgp-keys/gentoo-release.asc
 
 	# List all release engineering keys (https://serverfault.com/a/946428)
-	myrelkeys=$(gpg ${QUIET_GPG} --batch --list-keys --keyid-format=long --with-colons \
+	myrelkeys=$(${GPG} ${QUIET_GPG} --batch --list-keys --keyid-format=long --with-colons \
 			| grep "^fpr" \
 			| sed -n 's/^fpr:::::::::\([[:alnum:]]\+\):/\1/p' \
 			| grep -v "${mykeyid}")
 
 	# TODO: keys.openpgp.org lacks a UID for our keys, need to verify email
 	for keyserver in "${mykeyservers[@]}" ; do
-		timeout -f -k ${GPG_TIMEOUT_KILL} ${GPG_TIMEOUT_TERM} gpg ${QUIET_GPG} --batch --keyserver "${keyserver}" --recv-keys ${myrelkeys} || true
+		timeout -f -k ${GPG_TIMEOUT_KILL} ${GPG_TIMEOUT_TERM} ${GPG} ${QUIET_GPG} --batch --keyserver "${keyserver}" --recv-keys ${myrelkeys} || true
 	done
 	# We only sign (-> ultimate trust) the keys we originally import, so this is fine and
 	# just serves as an additional refresh method.
 	gpg --batch --with-colons --list-keys | grep "^uid" | cut -d: -f10 | \
 			sed -n 's/.*<\([^>]\+@[^>]\+\.[^>]\+\)>.*/\1/p' | sort -u | \
-			xargs gpg ${QUIET_GPG} --auto-key-locate=clear,nodefault,wkd --locate-key || true
+			xargs ${GPG} ${QUIET_GPG} --auto-key-locate=clear,nodefault,wkd --locate-key || true
 
 	# Locally sign all release engineering keys.
 	for relkeyid in ${myrelkeys} ; do
 		# We have to use --quick-lsign-key for this to work with batch: https://dev.gnupg.org/T1606
-		if ! gpg ${QUIET_GPG} --batch --yes --no-tty --passphrase-file="${GNUPGHOME}/pass" --pinentry-mode loopback --quick-lsign-key "${relkeyid}" ; then
+		if ! ${GPG} ${QUIET_GPG} --batch --yes --no-tty --passphrase-file="${GNUPGHOME}/pass" --pinentry-mode loopback --quick-lsign-key "${relkeyid}" ; then
 			# But that won't work for subkeys, so fallback to a hackier method.
 			set -o pipefail
-			echo -e "y\ny\n" | gpg ${QUIET_GPG} --command-fd 0 --yes --no-tty --passphrase-file="${GNUPGHOME}/pass" --pinentry-mode loopback --lsign-key "${relkeyid}"
+			echo -e "y\ny\n" | ${GPG} ${QUIET_GPG} --command-fd 0 --yes --no-tty --passphrase-file="${GNUPGHOME}/pass" --pinentry-mode loopback --lsign-key "${relkeyid}"
 			set +o pipefail
 		fi
 	done
 
 	# Update the trustdb
-	gpg ${QUIET_GPG} --batch --check-trustdb
+	${GPG} ${QUIET_GPG} --batch --check-trustdb
 
 	# Make sure the trustdb is world-readable.
 	chmod ugo+r "${GNUPGHOME}/trustdb.gpg"
