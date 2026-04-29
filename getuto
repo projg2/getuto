@@ -84,7 +84,7 @@ getuto_refresh() {
 		done
 		# We only sign (-> ultimate trust) the keys we originally import, so this is fine and
 		# just serves as an additional refresh method.
-		gpg --batch --with-colons --list-keys | grep "^uid" | cut -d: -f10 | \
+		${GPG} --batch --with-colons --list-keys | grep "^uid" | cut -d: -f10 | \
 			sed -n 's/.*<\([^>]\+@[^>]\+\.[^>]\+\)>.*/\1/p' | sort -u | \
 			xargs ${GPG} ${QUIET_GPG} --auto-key-locate=clear,nodefault,wkd --locate-key || true
 
@@ -183,7 +183,7 @@ if [[ ! -d ${GNUPGHOME} ]] ; then
 	done
 	# We only sign (-> ultimate trust) the keys we originally import, so this is fine and
 	# just serves as an additional refresh method.
-	gpg --batch --with-colons --list-keys | grep "^uid" | cut -d: -f10 | \
+	${GPG} --batch --with-colons --list-keys | grep "^uid" | cut -d: -f10 | \
 			sed -n 's/.*<\([^>]\+@[^>]\+\.[^>]\+\)>.*/\1/p' | sort -u | \
 			xargs ${GPG} ${QUIET_GPG} --auto-key-locate=clear,nodefault,wkd --locate-key || true
 
