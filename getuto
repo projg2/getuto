@@ -34,7 +34,7 @@ QUIET_GPG=''
 GPG_TIMEOUT_TERM='1.75m'
 GPG_TIMEOUT_KILL='2.5m'
 
-[[ $1 == '-v' ]] && QUIET=''
+[[ ${PORTAGE_DEBUG} || ${GETUTO_DEBUG} || $1 == '-v' ]] && QUIET=''
 #  If QUIET is enabled, pass '--quiet' and suppress GPG homedir permission warnings
 #  These permission warnings cannot be suppressed using gpg.conf
 [[ -n ${QUIET} ]] && QUIET_GPG='--quiet --no-permission-warning'
