@@ -204,6 +204,9 @@ if [[ ! -d ${GNUPGHOME} ]] ; then
 	# Make sure the trustdb is world-readable.
 	chmod ugo+r "${GNUPGHOME}/trustdb.gpg"
 
+	# Clean up.
+	gpgconf --kill all
+
 	# The keyring directory is fully initialised now, so move it over.
 	mv ${GNUPGHOME} ${GNUPGHOME_orig}
 	GNUPGHOME=${GNUPGHOME_orig}
