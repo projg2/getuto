@@ -34,6 +34,8 @@ QUIET_GPG=''
 GPG_TIMEOUT_TERM='1.75m'
 GPG_TIMEOUT_KILL='2.5m'
 
+# Controls whether keys are refreshed via WKD or keyservers. An import
+# of the local Gentoo keyring is always done.
 : ${GETUTO_EXTERNAL_REFRESH:-0}
 
 [[ ${PORTAGE_DEBUG} || ${GETUTO_DEBUG} || $1 == '-v' ]] && QUIET=''
