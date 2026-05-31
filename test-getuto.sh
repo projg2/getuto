@@ -62,3 +62,22 @@ bash -x ./getuto -v
 
 echo XXXXX Clean up
 rm -r "${ROOT%/}"/etc/portage/gnupg
+
+echo ==================================================================
+echo Testing external refreshes
+echo
+
+export GETUTO_EXTERNAL_REFRESH=1
+
+echo XXXXX Generate a keyring using getuto.
+bash -x ./getuto -v
+
+echo XXXXX Make sure the newly-generated keyring works.
+for file in image.tar.xz metadata.tar.xz ; do
+	gpg --home "${ROOT%/}"/etc/portage/gnupg --verify "${ROOT}"/tmp/binpkg/libc-1-r1-1/${file}.sig
+done
+
+echo XXXXX Try to refresh an existing keyring.
+bash -x ./getuto -v
+
+echo XXXXX Clean up

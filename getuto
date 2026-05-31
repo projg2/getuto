@@ -34,6 +34,8 @@ QUIET_GPG=''
 GPG_TIMEOUT_TERM='1.75m'
 GPG_TIMEOUT_KILL='2.5m'
 
+: ${GETUTO_EXTERNAL_REFRESH:-0}
+
 [[ ${PORTAGE_DEBUG} || ${GETUTO_DEBUG} || $1 == '-v' ]] && QUIET=''
 #  If QUIET is enabled, pass '--quiet' and suppress GPG homedir permission warnings
 #  These permission warnings cannot be suppressed using gpg.conf
@@ -77,16 +79,18 @@ getuto_refresh() {
 		# for e.g. revocations, renewals, etc if we're on a firewalled machine.
 		${GPG} ${QUIET_GPG} --batch --import "${ROOT%/}"/usr/share/openpgp-keys/gentoo-release.asc
 
-		# Refresh all keys from the keyserver if we can.
-		for keyserver in "${mykeyservers[@]}" ; do
-			# TODO: keys.openpgp.org lacks a UID for our keys, need to verify email
-			timeout -f -k ${GPG_TIMEOUT_KILL} ${GPG_TIMEOUT_TERM} ${GPG} ${QUIET_GPG} --batch --keyserver "${keyserver}" --refresh-keys || true
-		done
-		# We only sign (-> ultimate trust) the keys we originally import, so this is fine and
-		# just serves as an additional refresh method.
-		${GPG} --batch --with-colons --list-keys | grep "^uid" | cut -d: -f10 | \
-			sed -n 's/.*<\([^>]\+@[^>]\+\.[^>]\+\)>.*/\1/p' | sort -u | \
-			xargs ${GPG} ${QUIET_GPG} --auto-key-locate=clear,nodefault,wkd --locate-key || true
+		if [[ ${GETUTO_EXTERNAL_REFRESH} == 1 ]] ; then
+			# Refresh all keys from the keyserver if we can.
+			for keyserver in "${mykeyservers[@]}" ; do
+				# TODO: keys.openpgp.org lacks a UID for our keys, need to verify email
+				timeout -f -k ${GPG_TIMEOUT_KILL} ${GPG_TIMEOUT_TERM} ${GPG} ${QUIET_GPG} --batch --keyserver "${keyserver}" --refresh-keys || true
+			done
+			# We only sign (-> ultimate trust) the keys we originally import, so this is fine and
+			# just serves as an additional refresh method.
+			${GPG} --batch --with-colons --list-keys | grep "^uid" | cut -d: -f10 | \
+				sed -n 's/.*<\([^>]\+@[^>]\+\.[^>]\+\)>.*/\1/p' | sort -u | \
+				xargs ${GPG} ${QUIET_GPG} --auto-key-locate=clear,nodefault,wkd --locate-key || true
+		fi
 
 		touch ${LASTRUNFILE}
 	else
@@ -178,14 +182,16 @@ if [[ ! -d ${GNUPGHOME} ]] ; then
 			| grep -v "${mykeyid}")
 
 	# TODO: keys.openpgp.org lacks a UID for our keys, need to verify email
-	for keyserver in "${mykeyservers[@]}" ; do
-		timeout -f -k ${GPG_TIMEOUT_KILL} ${GPG_TIMEOUT_TERM} ${GPG} ${QUIET_GPG} --batch --keyserver "${keyserver}" --recv-keys ${myrelkeys} || true
-	done
-	# We only sign (-> ultimate trust) the keys we originally import, so this is fine and
-	# just serves as an additional refresh method.
-	${GPG} --batch --with-colons --list-keys | grep "^uid" | cut -d: -f10 | \
-			sed -n 's/.*<\([^>]\+@[^>]\+\.[^>]\+\)>.*/\1/p' | sort -u | \
-			xargs ${GPG} ${QUIET_GPG} --auto-key-locate=clear,nodefault,wkd --locate-key || true
+	if [[ ${GETUTO_EXTERNAL_REFRESH} == 1 ]] ; then
+		for keyserver in "${mykeyservers[@]}" ; do
+			timeout -f -k ${GPG_TIMEOUT_KILL} ${GPG_TIMEOUT_TERM} ${GPG} ${QUIET_GPG} --batch --keyserver "${keyserver}" --recv-keys ${myrelkeys} || true
+		done
+		# We only sign (-> ultimate trust) the keys we originally import, so this is fine and
+		# just serves as an additional refresh method.
+		${GPG} --batch --with-colons --list-keys | grep "^uid" | cut -d: -f10 | \
+				sed -n 's/.*<\([^>]\+@[^>]\+\.[^>]\+\)>.*/\1/p' | sort -u | \
+				xargs ${GPG} ${QUIET_GPG} --auto-key-locate=clear,nodefault,wkd --locate-key || true
+	fi
 
 	# Locally sign all release engineering keys.
 	for relkeyid in ${myrelkeys} ; do
